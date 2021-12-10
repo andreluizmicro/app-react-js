@@ -1,4 +1,4 @@
-### Configuração da base projeto com React
+### Configuração da base projeto com React do zero
 
 ### PASSO A PASSO APP REACT
 ### Criando package.json - Dependências do Projeto(Códigos de terceiros, também bibliotecas)
@@ -183,3 +183,159 @@ Vamos substituir o arquivo anterior para este:
 
 
 Também vamos precisar alterar o arquivo global.css para global.scss
+
+### configuração do TypeScript no Projeto
+
+O TypeScript serve para tipar as propriedades que um componente pode receber.
+
+Vamos as configurações:
+
+    yarn add typescript -D
+
+Agora vamos inicializar o typescript na aplicação.
+
+    yarn tsc --init
+
+### Configurando o tsconfig.json
+
+Vamos habilitar mais as seguintes linhas: 
+
+    "lib": ["dom", "dom.iterable", "esnext"], 
+    "allowJs": true,
+    "allowSyntheticDefaultImports": true,  
+    "moduleResolution": "node",  
+    "resolveJsonModule": true,  
+    "isolatedModules": true, 
+    "noEmit": true,                                                                                   
+
+
+Após as configurações vamos remover as linhas:
+
+    "target": "es2016",
+    "module": "commonjs",
+
+agora por fora do CompilerOptions vamos criar:
+
+    "include": ["src"]
+
+
+Ao final teremos o seguinte arquivo `tsconfig.json`
+    
+    {
+        "compilerOptions": {                                  
+        "lib": ["dom", "dom.iterable", "esnext"],                                        
+        "jsx": "react-jsx",                                
+        "moduleResolution": "node",                       
+        "resolveJsonModule": true,                        
+        "allowJs": true,                                  
+        "noEmit": true,                                   
+        "isolatedModules": true,                          
+        "allowSyntheticDefaultImports": true,             
+        "esModuleInterop": true,                             
+        "forceConsistentCasingInFileNames": true,            
+        "strict": true,                                      
+        "skipLibCheck": true                                 
+    },
+        "include": ["src"]
+    }
+
+Agora precisamos intalar a dependência @babel/typescript:
+Essa dependência serve para que o babel interprete código typescript
+
+
+    yarn add @babel/preset-typescript -D
+
+Após a instalação vamos configurar o arquivo `babel.config.js` colocando a linha:
+
+    '@babel/preset-typescript',
+
+Neste momento o arquivo vai ficar assim:
+
+    module.exports = {
+        presets: [
+            '@babel/preset-env',
+            '@babel/preset-typescript',
+            ['@babel/preset-react', {
+                    runtime: 'automatic'
+                }
+            ]
+        ]
+    }
+
+
+Além disso vamos precisar alterar o arquivo `webpack.config.json`
+Vamos alterar dentro de `module->rules` alterar as linhas:
+
+    test: /\.(j|t)sx$/,
+
+
+Vamos alterar também dentro de `resolve -> extensions`
+
+    extensions: ['.js', '.jsx', '.ts', '.tsx'],
+
+E também alterar o `entry` para:
+
+    entry: path.resolve(__dirname, 'src', 'index.tsx'),
+
+
+Após a configuração o `webpack.config.json` ficará assim:
+
+    const path = require('path');
+const HtmlWebPackPlugin = require('html-webpack-plugin');
+const ReactRefreshWebPackPlugin = require('@pmmmwh/react-refresh-webpack-plugin');
+
+const isDevelopment = process.env.NODE_ENV !== 'production';
+
+    module.exports = {
+        mode: isDevelopment ? 'development' : 'production',
+        devtool: isDevelopment ? 'eval-source-map' : 'source-map',
+        entry: path.resolve(__dirname, 'src', 'index.tsx'),
+        output: {
+            path: path.resolve(__dirname, 'dist'),
+            filename: 'bundle.js'
+        },
+        resolve: {
+            extensions: ['.js', '.jsx', '.ts', '.tsx'],
+        },
+        devServer: {
+            contentBase: path.resolve(__dirname, 'public'),
+            hot: true,
+        },
+        plugins: [
+            isDevelopment && new ReactRefreshWebPackPlugin(),
+            new HtmlWebPackPlugin({
+                template: path.resolve(__dirname, 'public', 'index.html'),
+            })
+        ].filter(Boolean),
+        module: {
+            rules: [
+                {
+                    test: /\.(j|t)sx$/,
+                    exclude: /node_modules/,
+                    use: {
+                        loader: 'babel-loader',
+                        options: {
+                            plugins: [
+                                isDevelopment && require.resolve('react-refresh/babel')
+                            ].filter(Boolean)
+                        },
+                    },
+                },
+                {
+                    test: /\.scss$/,
+                    exclude: /node_modules/,
+                    use: ['style-loader', 'css-loader', 'sass-loader'],
+                },
+            ],
+        }
+    };
+
+Após isso vamos renomear o arquivo `index.jsx` para `index.tsx`
+
+Por fim vamos instalar as definições de tipos do typescript com o comando:
+
+Aqui podemos instalar duas dependencias:
+
+    yarn add @types/react-dom -D
+
+    yarn add @types/react -D
